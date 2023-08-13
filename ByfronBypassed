@@ -1,0 +1,72 @@
+-- Reference to the player
+local player = game.Players.LocalPlayer
+
+-- Create main GUI
+local mainGui = Instance.new("ScreenGui")
+mainGui.Parent = player.PlayerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 150)
+frame.Position = UDim2.new(0.5, -100, 0.5, -75)
+frame.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+frame.Parent = mainGui
+
+local function enableDragging()
+    local dragging = false
+    local dragInput, mousePos, framePos
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragInput = input
+            mousePos = input.Position
+            framePos = frame.Position
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - mousePos
+            frame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+        end
+    end)
+
+    frame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+end
+
+enableDragging()
+
+-- Create text box
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0, 180, 0, 30)
+textBox.Position = UDim2.new(0, 10, 0, 10)
+textBox.PlaceholderText = "Enter username"
+textBox.Parent = frame
+
+-- Create teleport button
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(0, 180, 0, 30)
+teleportButton.Position = UDim2.new(0, 10, 0, 50)
+teleportButton.Text = "Teleport"
+teleportButton.Parent = frame
+
+-- Function for button click
+local function teleportToPlayer()
+    local targetPlayer = game.Players:FindFirstChild(textBox.Text)
+    if targetPlayer then
+        local targetCharacter = targetPlayer.Character
+        if targetCharacter then
+            local targetHumanoidRootPart = targetCharacter:FindFirstChild("HumanoidRootPart")
+            if targetHumanoidRootPart then
+                player.Character:MoveTo(targetHumanoidRootPart.Position)
+            end
+        end
+    end
+end
+
+-- Connect button click to function
+teleportButton.MouseButton1Click:Connect(teleportToPlayer)
